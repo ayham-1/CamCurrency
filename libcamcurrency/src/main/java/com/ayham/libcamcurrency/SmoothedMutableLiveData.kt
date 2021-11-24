@@ -1,4 +1,4 @@
-package com.ayham.camcurrency
+package com.ayham.libcamcurrency
 
 import android.os.Handler
 import androidx.lifecycle.MutableLiveData

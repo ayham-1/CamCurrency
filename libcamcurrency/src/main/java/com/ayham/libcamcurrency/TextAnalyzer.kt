@@ -1,4 +1,4 @@
-package com.ayham.camcurrency
+package com.ayham.libcamcurrency
 
 import android.content.Context
 import android.graphics.Rect
@@ -14,11 +14,6 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.TextRecognition
 import java.lang.Exception
-
-import com.ayham.camcurrency.ImageUtils
-import com.google.android.gms.vision.text.TextBlock
-import java.util.*
-import kotlin.math.abs
 
 class TextAnalyzer(
     private val context: Context,
