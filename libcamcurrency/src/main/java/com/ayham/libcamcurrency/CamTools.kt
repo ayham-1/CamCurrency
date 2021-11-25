@@ -192,7 +192,13 @@ class CamTools(var activity: AppCompatActivity,
                 } catch (e: Exception) { return@Observer }
             })
             this.imageCropPercentages.observe(lifeCycleOwner,
-                Observer { drawOverlay(overlay.holder, it.first, it.second) })
+                Observer {
+                    try {
+                        drawOverlay(overlay.holder, it.first, it.second)
+                    } catch (e: Exception) {
+                        return@Observer
+                    }
+                })
 
             // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA

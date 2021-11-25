@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">CamCurrency PRO</string>
+    <string name="overlay_help">Center numbers inside box.</string>
+    <string name="converted">Converted:</string>
+    <string name="to">to:</string>
+    <string name="zero_val">0.00</string>
+    <string name="fromCurrencyText">Currency to Convert From:</string>
+    <string name="toCurrencyText">Currency to Convert To:</string>
+    <string-array name="currencyList"></string-array>
+</resources>
