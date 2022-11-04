@@ -36,6 +36,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var fromCurrencySpinner: Spinner
     private lateinit var toCurrencySpinner: Spinner
     private var fromCurrencyRate: Double = 0.0
+    private var fromCurrencyCode: String = ""
+    private var toCurrencyRate: Double = 0.0
+    private var toCurrencyCode: String = ""
+    private lateinit var currencyRateHandler: Handler
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,12 +82,14 @@ class MainActivity : AppCompatActivity() {
                 val currencyName = selectedItem.split("(")[0]
                 val currencyCode = selectedItem.split("(")[1]
                     .replace("(", "").replace(")", "")
-                print(currencyCode)
 
                 val mainThis = this@MainActivity
                 try {
                     mainThis.fromCurrencyRate =
                         mainThis.floatrate.ratesDao.findByTargetCurrency(currencyCode).inverseRate
+                    mainThis.fromCurrencyCode = currencyCode
+
+                    mainThis.currencyRateHandler.sendEmptyMessage(0)
                 } catch (e: Exception) {
                     return
                 }
@@ -102,10 +108,9 @@ class MainActivity : AppCompatActivity() {
 
                 val mainThis = this@MainActivity
                 try {
-                    mainThis.camtools.value =
-                        mainThis.fromCurrencyRate *
-                                mainThis.floatrate.ratesDao.findByTargetCurrency(currencyCode).exchangeRate
-                    print(mainThis.camtools.value)
+                    mainThis.toCurrencyRate = mainThis.floatrate.ratesDao.findByTargetCurrency(currencyCode).exchangeRate
+                    mainThis.toCurrencyCode = currencyCode
+                    mainThis.currencyRateHandler.sendEmptyMessage(0)
                 } catch (e: Exception) {
                     return
                 }
@@ -128,6 +133,15 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+
+        @SuppressLint("HandlerLeak")
+        this.currencyRateHandler = object : Handler() {
+            override fun handleMessage(msg: Message) {
+                val mainThis = this@MainActivity
+                if (mainThis.fromCurrencyCode == mainThis.toCurrencyCode) mainThis.camtools.value = 1.0
+                else mainThis.camtools.value = mainThis.fromCurrencyRate * mainThis.toCurrencyRate
+            }
+        }
 
         @SuppressLint("HandlerLeak")
         this.progressUiHandler = object : Handler() {
@@ -159,19 +173,23 @@ class MainActivity : AppCompatActivity() {
                 fromCurrencySpinner.adapter = adapter
                 toCurrencySpinner.adapter = adapter
 
-                // Try to predict country to convert to
-                val locale = this@MainActivity.applicationContext.resources.configuration.locale
-                val currencyTo: Currency = Currency.getInstance(locale)
-                toCurrencySpinner.setSelection(currencies.indexOf(
-                    currencies.first { elem -> elem == currencyTo.displayName + " (" + currencyTo.currencyCode + ")" }
-                ))
+                try {
+                    // Try to predict country to convert to
+                    val locale = this@MainActivity.applicationContext.resources.configuration.locale
+                    val currencyTo: Currency = Currency.getInstance(locale)
+                    toCurrencySpinner.setSelection(currencies.indexOf(
+                        currencies.first { elem -> elem == currencyTo.displayName + " (" + currencyTo.currencyCode + ")" }
+                    ))
 
-                // Try to predict country to convert from
-                val tm: TelephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-                val currencyFrom: Currency = Currency.getInstance(Locale("", tm.networkCountryIso))
-                fromCurrencySpinner.setSelection(currencies.indexOf(
-                    currencies.first { elem -> elem == currencyFrom.displayName + " (" + currencyFrom.currencyCode + ")" }
-                ))
+                    // Try to predict country to convert from
+                    val tm: TelephonyManager =
+                        getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+                    val currencyFrom: Currency =
+                        Currency.getInstance(Locale("", tm.networkCountryIso))
+                    fromCurrencySpinner.setSelection(currencies.indexOf(
+                        currencies.first { elem -> elem == currencyFrom.displayName + " (" + currencyFrom.currencyCode + ")" }
+                    ))
+                } catch (e: Exception) { }
             }
         }
     }
